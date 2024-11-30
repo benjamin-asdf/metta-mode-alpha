@@ -1,6 +1,12 @@
 -----------
 [![License GPL 3][badge-license]](http://www.gnu.org/licenses/gpl-3.0.txt)
 
+MeTTa
+A language for cognitive computations
+
+OpenCog Hyperon, towards AGI
+
+https://metta-lang.dev/
 
 # Usage
 
