@@ -225,8 +225,9 @@
     (modify-syntax-entry ?' "_ p" table) ; ' is allowed anywhere but the start of symbols
 
     ;; Others
-    (modify-syntax-entry ?\; "<" table)  ; comment start
-    (modify-syntax-entry ?\n ">" table)  ; comment end
+    (modify-syntax-entry ?\; "<" table) ; comment start
+    (modify-syntax-entry ?\n ">" table) ; comment end
+    (modify-syntax-entry ?\' "\"" table) ;; single quoted string
     (modify-syntax-entry ?\" "\"" table) ; string
     (modify-syntax-entry ?\\ "\\" table) ; escape
 
@@ -266,37 +267,84 @@
     "add-reduct"))
 
 (defconst
+  metta-operators
+  '(">"
+    ">="
+    "<"
+    "<="
+    "="
+    "+"
+    "-"
+    "*"
+    "/"
+    "%"
+    "=="
+    "!="
+    "&&"))
+
+(defface metta-operators-face
+  '((t (:inherit font-lock-function-name-face :foreground "red")))
+  "Face for operators in Metta mode.")
+
+(defconst metta-operators-other
+  '("and" "or" "not" "xor" "flip" "empty" "if" "case"))
+
+(defconst
   metta-mode-font-lock-keywords
   (eval-when-compile
-    `(
-      ;; in
+    `(;; in
       ;; (= (foo) (bar))
       ;; fontify = ?
       ;; fontify foo ?
-      ;; 
-
+      ;;
       ;; -----------------------------
       ;; - type declarations
       ;; - type syntax
       ;; -----------------------------
-      
       (,(concat
          "\\<"
-         (regexp-opt
-          '("&self")
-          t)
+         (regexp-opt '("&self") t)
          "\\>")
-       0 font-lock-builtin-face)
-      
+       0
+       font-lock-type-face)
       ;; special forms
       (,(concat
-         "("
+         ;; "("
          (regexp-opt
           metta-grounded-symbols
           t)
          "\\>")
        1
-       font-lock-keyword-face))))
+       font-lock-builtin-face)
+      (,(concat
+         "\\<"
+         (regexp-opt metta-operators t)
+         "\\>")
+       1
+       'metta-operators-face)
+      (,(concat
+         "("
+         (regexp-opt
+          metta-operators-other
+          t)
+         "\\>")
+       1
+       font-lock-keyword-face)
+      (,(concat
+         "\\<"
+         (regexp-opt
+          '("True" "False" "nil" "Nil")
+          t)
+         "\\>")
+       0
+       font-lock-constant-face)
+      ;; ---------------------------
+      (,(concat "\\<$" "\\w+" "\\>")
+       (0
+        font-lock-variable-name-face
+        nil
+        t)))))
+
 
 (defun metta-font-lock-setup ()
   "Configures font-lock for editing Metta code."
@@ -327,7 +375,9 @@
       (lambda (_)
         (append
          metta-grounded-symbols
-         '("&self")))))))
+         '("&self")
+         metta-operators
+         metta-operators-other))))))
 
 (define-derived-mode metta-mode scheme-mode "MeTTa"
   (metta-font-lock-setup)
@@ -336,7 +386,18 @@
             nil
             t))
 
-(add-to-list 'auto-mode-alist '("\\.metta\\'" . metta-mode))
+
+;; use config (todo)
+
+(set-face-attribute
+ 'metta-operators-face
+ nil
+ :bold t
+ :box nil)
+
+(add-to-list
+ 'auto-mode-alist
+ '("\\.metta\\'" . metta-mode))
 
 
 (provide 'metta-mode)
