@@ -272,7 +272,6 @@
     ">="
     "<"
     "<="
-    "="
     "+"
     "-"
     "*"
@@ -280,14 +279,19 @@
     "%"
     "=="
     "!="
-    "&&"))
+    "&&"
+    ;; I liked the = being green on my setup
+    "="
+    ))
 
 (defface metta-operators-face
   '((t (:inherit font-lock-function-name-face :foreground "red")))
   "Face for operators in Metta mode.")
 
 (defconst metta-operators-other
-  '("and" "or" "not" "xor" "flip" "empty" "if" "case"))
+  '("and" "or" "not" "xor" "flip" "empty" "if" "case"
+    ;; "="
+    ))
 
 (defconst
   metta-mode-font-lock-keywords
@@ -316,6 +320,9 @@
          "\\>")
        1
        font-lock-builtin-face)
+      (,(concat "\\<" "\!" "\\>")
+       0
+       font-lock-builtin-face)
       (,(concat
          "\\<"
          (regexp-opt metta-operators t)
@@ -333,7 +340,8 @@
       (,(concat
          "\\<"
          (regexp-opt
-          '("True" "False" "nil" "Nil")
+          '("True" "False" "nil" "Nil"
+            )
           t)
          "\\>")
        0
@@ -375,7 +383,7 @@
       (lambda (_)
         (append
          metta-grounded-symbols
-         '("&self")
+         '("&self" "Nil" "nil" "True" "False")
          metta-operators
          metta-operators-other))))))
 
@@ -393,6 +401,7 @@
  'metta-operators-face
  nil
  :bold t
+ :foreground nil
  :box nil)
 
 (add-to-list
