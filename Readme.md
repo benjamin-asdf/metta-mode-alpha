@@ -1,3 +1,5 @@
+
+
 -----------
 [![License GPL 3][badge-license]](http://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -32,6 +34,11 @@ Right now you have to manually edit metta-run-inferior-metta,
 
 - to eval and display results, https://github.com/abo-abo/lispy automatically works. 
 - TODO: 'eval-last-sexp' and so forth 
+
+# Features
+
+- tiny fontifation
+- tiny completion via 'completion-at-point'
 
 
 
