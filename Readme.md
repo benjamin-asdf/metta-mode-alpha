@@ -39,6 +39,8 @@ example:
 
 - to eval and display results, https://github.com/abo-abo/lispy automatically works. 
 - TODO: 'eval-last-sexp' and so forth 
+- TODO: consider using the scheme geiser interface
+
 
 # Features
 
