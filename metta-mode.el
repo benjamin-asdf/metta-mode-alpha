@@ -27,6 +27,21 @@
 ;; (defvar-local metta-eval-process-handler-hook '())
 ;; (defvar-local metta-eval-request-table (make-hash-table))
 
+
+;; 
+;; how to start a metta-repl
+;; This currently needs to be customized by the user. !
+(defun metta-start-metta-repl ()
+  (let ((default-directory "/home/benj/repos/hyperon-experimental/"))
+    (start-process
+     "MeTTA REPL"
+     (get-buffer-create
+      "*metta-repl*")
+     "cargo"
+     "run"
+     "--bin"
+     "metta-repl")))
+
 (defvar-local metta--request nil)
 
 (defun metta-connetion-process-filter (proc string)
@@ -51,15 +66,7 @@
   ;; - make it buffer for large outputs
   ;; - be inspried by clojure nrepl
   (interactive)
-  (let* ((default-directory "/home/benj/repos/hyperon-experimental/")
-         (p (start-process
-             "MeTTA REPL"
-             (get-buffer-create
-              "*metta-repl*")
-             "cargo"
-             "run"
-             "--bin"
-             "metta-repl")))
+  (let ((p (metta-start-metta-repl)))
     (set-process-filter
      p
      #'metta-connetion-process-filter)
@@ -351,7 +358,25 @@
        (0
         font-lock-variable-name-face
         nil
-        t)))))
+        t))
+
+      (,(concat "\\<"
+                (regexp-opt '("->" ":"))
+                "\\>")
+       (0
+        font-lock-type-face
+        nil
+        t))
+      ;; type syntax
+      ;; (,(concat
+      ;;           "("
+      ;;           "\\(->.+\\)"
+      ;;           ")")
+      ;;  (1
+      ;;   font-lock-type-face
+      ;;   nil
+      ;;   t))
+      )))
 
 
 (defun metta-font-lock-setup ()

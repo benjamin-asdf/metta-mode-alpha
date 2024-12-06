@@ -1,5 +1,4 @@
 
-
 -----------
 [![License GPL 3][badge-license]](http://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -22,15 +21,11 @@ https://metta-lang.dev/
 
 ```
 
-
 # Interactive Developement
 
-Right now you have to manually edit metta-run-inferior-metta, 
-
+- redifine `metta-start-metta-repl` to your needs. 
 - run `metta-run-inferior-metta`
-
 - `metta-eval-string` is roughly the same as typing in a metta repl
-
 
 - to eval and display results, https://github.com/abo-abo/lispy automatically works. 
 - TODO: 'eval-last-sexp' and so forth 
@@ -40,10 +35,9 @@ Right now you have to manually edit metta-run-inferior-metta,
 - tiny fontifation
 - tiny completion via 'completion-at-point'
 
-
-
-# Lispy
-
+- TODO: completion with lsp
+- TODO: completion with inferior metta? 
+- TODO: fontification for function symbols, type symbols etc.? 
 
 
 ## License
