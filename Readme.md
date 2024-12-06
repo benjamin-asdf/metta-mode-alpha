@@ -33,6 +33,8 @@ example:
 
 # Interactive Developement
 
+> ⚠ I did not implement any interactive without a dependency on lispy at the moment. 
+
 - redifine `metta-start-metta-repl` to your needs. 
 - run `metta-run-inferior-metta`
 - `metta-eval-string` is roughly the same as typing in a metta repl
