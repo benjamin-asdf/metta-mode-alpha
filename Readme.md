@@ -48,6 +48,11 @@ example:
 - TODO: fontification for function symbols, type symbols etc.? 
 
 
+# Acknowledgments
+
+I copied stuff from https://github.com/Amanuel-1/metta-lang-highlighter for syntax highlighting.
+
+
 ## License
 
 MeTTa Mode is distributed under the GNU General Public License, version 3.
