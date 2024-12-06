@@ -11,8 +11,7 @@ https://metta-lang.dev/
 
 # Usage
 
-![showcase gif](https://imgur.com/jMhJ0ip)
-
+![showcase gif](https://i.imgur.com/jMhJ0ip.gif)
 
 - load file metta-mode.el
 
