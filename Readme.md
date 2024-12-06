@@ -9,9 +9,9 @@ OpenCog Hyperon, towards AGI
 
 https://metta-lang.dev/
 
-# Usage
-
 ![showcase gif](https://i.imgur.com/jMhJ0ip.gif)
+
+# Usage
 
 - load file metta-mode.el
 
