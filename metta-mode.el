@@ -420,18 +420,10 @@
             t))
 
 
-;; use config (todo)
-
-(set-face-attribute
- 'metta-operators-face
- nil
- :bold t
- :foreground nil
- :box nil)
-
-(add-to-list
- 'auto-mode-alist
- '("\\.metta\\'" . metta-mode))
-
+;;;###autoload
+(progn
+  (add-to-list
+   'auto-mode-alist
+   '("\\.metta\\'" . metta-mode)))
 
 (provide 'metta-mode)

@@ -13,12 +13,20 @@ https://metta-lang.dev/
 
 - load file metta-mode.el
 
-``` elisp
-(add-to-list 'load-path
-             ;; fix path
-             "metta-mode-alpha/")
-(require 'metta-mode)
+example: 
 
+``` elisp
+;; fix your path
+
+(add-to-list 'load-path "/home/benj/repos/metta-mode-alpha/")
+
+(when (require 'metta-mode nil t)
+  (set-face-attribute
+   'metta-operators-face
+   nil
+   :bold t
+   :foreground nil
+   :box nil))
 ```
 
 # Interactive Developement
