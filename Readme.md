@@ -1,4 +1,3 @@
-
 -----------
 [![License GPL 3][badge-license]](http://www.gnu.org/licenses/gpl-3.0.txt)
 
@@ -15,7 +14,7 @@ https://metta-lang.dev/
 
 - load file metta-mode.el
 
-example: 
+example:
 
 ``` elisp
 ;; fix your path
@@ -33,14 +32,13 @@ example:
 
 # Interactive Developement
 
-> ⚠ I did not implement any interactive without a dependency on lispy at the moment. 
+> ⚠ I did not implement any interactive without a dependency on [lispy](https://github.com/abo-abo/lispy) at the moment.
 
-- redifine `metta-start-metta-repl` to your needs. 
+- redifine `metta-start-metta-repl` to your needs.
 - run `metta-run-inferior-metta`
 - `metta-eval-string` is roughly the same as typing in a metta repl
 
-- to eval and display results, https://github.com/abo-abo/lispy automatically works. 
-- TODO: 'eval-last-sexp' and so forth 
+- TODO: 'eval-last-sexp' and so forth
 - TODO: consider using the scheme geiser interface
 
 
@@ -50,8 +48,8 @@ example:
 - tiny completion via 'completion-at-point'
 
 - TODO: completion with lsp
-- TODO: completion with inferior metta? 
-- TODO: fontification for function symbols, type symbols etc.? 
+- TODO: completion with inferior metta?
+- TODO: fontification for function symbols, type symbols etc.?
 
 
 # Acknowledgments
