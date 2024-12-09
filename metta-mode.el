@@ -31,6 +31,9 @@
 ;; 
 ;; how to start a metta-repl
 ;; This currently needs to be customized by the user. !
+
+
+
 (defun metta-start-metta-repl ()
   (let ((default-directory "/home/benj/repos/hyperon-experimental/"))
     (start-process
@@ -43,20 +46,6 @@
      "metta-repl")))
 
 (defvar-local metta--request nil)
-
-(defun metta-connetion-process-filter (proc string)
-  (with-current-buffer
-      (process-buffer proc)
-    (insert string)
-    (when-let ((k (plist-get metta--request :k)))
-      (funcall k string))
-    ;; (when-let*
-    ;;     ((req
-    ;;       (car (hash-table-values
-    ;;             metta-eval-request-table)))
-    ;;      (k (plist-get req :k)))
-    ;;   (funcall k string))
-    ))
 
 (defun metta-run-inferior-metta ()
   ;; todo:
@@ -72,6 +61,35 @@
      #'metta-connetion-process-filter)
     (display-buffer
      (process-buffer p))))
+
+(defun metta-connetion-process-filter (proc string)
+  (with-current-buffer
+      (process-buffer proc)
+    (insert string)
+    (when-let ((k (plist-get metta--request :k)))
+      ;; kludge: filter the result list of something
+      ;; this way I differentiate between printing and returning
+      ;; results
+      ;;
+      ;; TODO: 1. request response concept
+      ;;
+      ;; (defvar thestring string)
+      ;; (s-matches? "^\\[.+?\\]$" (s-trim thestring))
+      (let ((string (s-trim string)))
+        (when
+            (or
+             (s-matches? "^\\[.+?\\]$" string)
+             (equal ">" string)
+             (equal "[]" string))
+          (funcall k string)
+          (setf metta--request '()))))
+    ;; (when-let*
+    ;;     ((req
+    ;;       (car (hash-table-values
+    ;;             metta-eval-request-table)))
+    ;;      (k (plist-get req :k)))
+    ;;   (funcall k string))
+    ))
 
 (defun metta-eval (connection string continuation)
   (let* ((orig-buffer (current-buffer))
@@ -127,10 +145,9 @@
        (get-buffer-process connection)
        0.1))
     (setq myoutput output)
-    (if (equal output "> ")
+    (if (equal output ">")
         ":>"
       output)))
-
 
 ;; ----------------------
 ;; set up lispy
@@ -241,6 +258,24 @@
     table)
   "Syntax table for Metta mode.")
 
+(defconst
+  metta-operators
+  '(">"
+    ">="
+    "<"
+    "<="
+    "+"
+    "-"
+    "*"
+    "/"
+    "%"
+    "=="
+    "!="
+    "&&"
+    ;; I liked the = being green on my setup
+    "="
+    ))
+
 (defconst metta-grounded-symbols
   '(;; https://github.com/Amanuel-1/metta-lang-highlighter/blob/312ee852c01cdecec8e8243ac51dba384367f023/syntaxes/metta.tmLanguage.json#L61
     "import!"
@@ -271,25 +306,8 @@
     "regex"
     "unify"
     "quote"
-    "add-reduct"))
-
-(defconst
-  metta-operators
-  '(">"
-    ">="
-    "<"
-    "<="
-    "+"
-    "-"
-    "*"
-    "/"
-    "%"
-    "=="
-    "!="
-    "&&"
-    ;; I liked the = being green on my setup
-    "="
-    ))
+    "add-reduct"
+    "mod-space!"))
 
 (defface metta-operators-face
   '((t (:inherit font-lock-function-name-face :foreground "red")))
@@ -408,7 +426,19 @@
       (lambda (_)
         (append
          metta-grounded-symbols
-         '("&self" "Nil" "nil" "True" "False")
+         '("&self"
+           "Nil"
+           "nil"
+           "True"
+           "False"
+           "%Undefined%"
+           ;; ------------------
+           ;; python
+           "py-atom"
+           "py-dot"
+           "py-list"
+           "py-dict"
+           "py-tuple")
          metta-operators
          metta-operators-other))))))
 
