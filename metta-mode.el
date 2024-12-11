@@ -165,8 +165,7 @@
     "!="
     "&&"
     ;; I liked the = being green on my setup
-    "="
-    ))
+    "="))
 
 (defconst metta-grounded-symbols
   '(;; https://github.com/Amanuel-1/metta-lang-highlighter/blob/312ee852c01cdecec8e8243ac51dba384367f023/syntaxes/metta.tmLanguage.json#L61
@@ -399,11 +398,9 @@
 (defun metta-connetion-process-filter (proc string)
   (with-current-buffer
       (process-buffer proc)
+    (goto-char (point-max))
     (insert string)
     (when-let ((k (plist-get metta--request :k)))
-      ;; kludge: filter the result list of something
-      ;; this way I differentiate between printing and returning
-      ;; results
       ;;
       ;; TODO: 1. request response concept
       ;;
