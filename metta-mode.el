@@ -16,171 +16,61 @@
 ;; This file is not part of GNU Emacs.
 
 
-;; 
+;;
 ;; Author: Benjamin Schwerdtner <Benjamin.Schwerdtner@gmail.com>
+;; Author: Douglas R. Miles,
+;;         https://github.com/trueagi-io/metta-wam/blob/master/libraries/lsp_server_metta/lsp-metta.el
+;; 
 ;; URL:
 ;; Version: 0.01
+;; Keywords: lsp, metta
 ;;  
 
 
+;;; Commentary:
+;;
+;; This Emacs package provides a Metta language major mode and integrates
+;; an LSP client for enhanced language features. To use this package,
+;; simply place it in your Emacs directory, typically ~/.emacs.d/,
+;; and add the following line to your ~/.emacs or init.el file:
+;;
+;; (load "path/to/lsp-metta.el")
+;;
+;; Ensure you adjust "path/to/" to the actual path where you saved this file.
+;; This will set up the major mode and LSP client whenever you open a Metta
+;; file with the .metta extension.
+;;
 
-;; (defvar-local metta-eval-process-handler-hook '())
-;; (defvar-local metta-eval-request-table (make-hash-table))
-
-
-;; 
-;; how to start a metta-repl
-;; This currently needs to be customized by the user. !
-
-
-
-(defun metta-start-metta-repl ()
-  (let ((default-directory "/home/benj/repos/hyperon-experimental/"))
-    (start-process
-     "MeTTA REPL"
-     (get-buffer-create
-      "*metta-repl*")
-     "cargo"
-     "run"
-     "--bin"
-     "metta-repl")))
-
-(defvar-local metta--request nil)
-
-(defun metta-run-inferior-metta ()
-  ;; todo:
-  ;; - make it a repl buffer so you can also type
-  ;; - run with some start script
-  ;; - implement req->response on metta side
-  ;; - make it buffer for large outputs
-  ;; - be inspried by clojure nrepl
-  (interactive)
-  (let ((p (metta-start-metta-repl)))
-    (set-process-filter
-     p
-     #'metta-connetion-process-filter)
-    (display-buffer
-     (process-buffer p))))
-
-(defun metta-connetion-process-filter (proc string)
-  (with-current-buffer
-      (process-buffer proc)
-    (insert string)
-    (when-let ((k (plist-get metta--request :k)))
-      ;; kludge: filter the result list of something
-      ;; this way I differentiate between printing and returning
-      ;; results
-      ;;
-      ;; TODO: 1. request response concept
-      ;;
-      ;; (defvar thestring string)
-      ;; (s-matches? "^\\[.+?\\]$" (s-trim thestring))
-      (let ((string (s-trim string)))
-        (when
-            (or
-             (s-matches? "^\\[.+?\\]$" string)
-             (equal ">" string)
-             (equal "[]" string))
-          (funcall k string)
-          (setf metta--request '()))))
-    ;; (when-let*
-    ;;     ((req
-    ;;       (car (hash-table-values
-    ;;             metta-eval-request-table)))
-    ;;      (k (plist-get req :k)))
-    ;;   (funcall k string))
-    ))
-
-(defun metta-eval (connection string continuation)
-  (let* ((orig-buffer (current-buffer))
-         (request-id (concat
-                      "metta-r-"
-                      (current-time)))
-         (kont (lambda (output)
-                 (with-current-buffer
-                     orig-buffer
-                   (funcall continuation output)))))
-    (with-current-buffer
-        connection
-      (process-send-string
-       (get-buffer-process connection)
-       string)
-      (process-send-string
-       (get-buffer-process connection)
-       "\n")
-      ;; the request id would come from the metta side
-      (setq-local
-       metta--request
-       `(:input ,string
-                :id ,request-id
-                :k ,kont)))))
-
-(defun metta-current-connection ()
-  ;; todo
-  (get-buffer "*metta-repl*"))
+;; Example using use-package:
+;;
+;; (use-package metta-mode
+;;   :load-path "path/to/lsp-metta"  ; Adjust the path as needed
+;;   :config
+;;   (setq some-metta-config-var 'value)
+;;   (add-hook 'metta-mode-hook #'lsp))
+;;
+;;; Code:
 
 
-;; (metta-eval
-;;  (get-buffer "*metta-repl*")
-;;  "!(+ 1 2)\n"
-;;  (lambda (s) (message "%s" s)))
+;; --------
 
-(defun metta-eval-string (s)
-  (let ((output)
-        (connection (get-buffer "*metta-repl*"))
-        (timout (run-at-time
-                 1
-                 nil
-                 (lambda ()
-                   (setq output "timeout")))))
-    (unless connection
-      (user-error
-       "No inferior metta."))
-    (metta-eval
-     connection
-     s
-     (lambda (s) (setq output s)))
-    (while (null output)
-      (accept-process-output
-       (get-buffer-process connection)
-       0.1))
-    (setq myoutput output)
-    (if (equal output ">")
-        ":>"
-      output)))
-
-;; ----------------------
-;; set up lispy
-;; ----------------------
-(when
-    (require 'lispy nil t)
-  ;; 
-  (add-to-list
-   'lispy-parens-preceding-syntax-alist
-   '(metta-mode . ("[`'~@]+"
-                   "#"
-                   "#\\?@?"
-                   "\\!"
-                   "\\!\\s-+?"
-                   "\\$")))
-  ;; ------------------------------------------
-  (add-to-list 'lispy-eval-alist '((metta-mode) lispy metta-eval-string)))
-
-(defun metta-last-sexp ()
-  ;; (thing-at-point 'sexp)
-  ;; ?? 
-  ;; dependency on lispy
-  (lispy--string-dwim))
-
-(defun metta-eval-last-sexp ()
-  (interactive)
-  (metta-eval
-   (metta-current-connection)
-   (metta-last-sexp)
-   (lambda (s)
-     (message "%s" s))))
+;; Define the mode's keymap
+(defvar metta-mode-map
+  (let ((map (make-sparse-keymap)))
+    ;; Define keybindings here if needed
+    map)
+  "Keymap for `metta-mode'.")
 
 ;; ------------------------------------------
+
+;; 
+;; - merged 
+;; https://github.com/trueagi-io/metta-wam/blob/master/libraries/lsp_server_metta/lsp-metta.el
+;; Author: Douglas R. Miles
+;; With small deviations, like 'cdr-atom' has font lock builtin face instead of keyword face.
+;; 
+;; 
+
 
 ;; 
 ;; copied from clojure-mode
@@ -208,6 +98,8 @@
 
 ;;; Code:
 
+;; Note: 
+;; Some of these might not be correct yet, (because it's copied from clojure-mode). 
 (defvar metta-mode-syntax-table
   (let ((table (make-syntax-table)))
     ;; Initialize ASCII charset as symbol syntax
@@ -249,14 +141,14 @@
     (modify-syntax-entry ?' "_ p" table) ; ' is allowed anywhere but the start of symbols
 
     ;; Others
-    (modify-syntax-entry ?\; "<" table) ; comment start
-    (modify-syntax-entry ?\n ">" table) ; comment end
+    (modify-syntax-entry ?\; "<" table)  ; comment start
+    (modify-syntax-entry ?\n ">" table)  ; comment end
     (modify-syntax-entry ?\' "\"" table) ;; single quoted string
     (modify-syntax-entry ?\" "\"" table) ; string
     (modify-syntax-entry ?\\ "\\" table) ; escape
 
     table)
-  "Syntax table for Metta mode.")
+  "Syntax table for `metta-mode'.")
 
 (defconst
   metta-operators
@@ -309,92 +201,99 @@
     "add-reduct"
     "mod-space!"))
 
+(defconst metta-constants
+  '("True" "False" "&self" "Type"))
+
 (defface metta-operators-face
   '((t (:inherit font-lock-function-name-face :foreground "red")))
   "Face for operators in Metta mode.")
 
-(defconst metta-operators-other
-  '("and" "or" "not" "xor" "flip" "empty" "if" "case"
-    ;; "="
-    ))
+(defconst
+  metta-operators-other
+  '("and"
+    "or"
+    "not"
+    "xor"
+    "flip"
+    "empty"
+    "if"
+    "case"
+    "let"
+    "let*"))
 
 (defconst
   metta-mode-font-lock-keywords
   (eval-when-compile
-    `(;; in
-      ;; (= (foo) (bar))
-      ;; fontify = ?
-      ;; fontify foo ?
-      ;;
-      ;; -----------------------------
-      ;; - type declarations
-      ;; - type syntax
-      ;; -----------------------------
-      (,(concat
-         "\\<"
-         (regexp-opt '("&self") t)
-         "\\>")
-       0
-       font-lock-type-face)
-      ;; special forms
-      (,(concat
-         ;; "("
-         (regexp-opt
-          metta-grounded-symbols
-          t)
-         "\\>")
-       1
-       font-lock-builtin-face)
-      (,(concat "\\<" "\!" "\\>")
-       0
-       font-lock-builtin-face)
-      (,(concat
-         "\\<"
-         (regexp-opt metta-operators t)
-         "\\>")
-       1
-       'metta-operators-face)
-      (,(concat
-         "("
-         (regexp-opt
-          metta-operators-other
-          t)
-         "\\>")
-       1
-       font-lock-keyword-face)
-      (,(concat
-         "\\<"
-         (regexp-opt
-          '("True" "False" "nil" "Nil"
-            )
-          t)
-         "\\>")
-       0
-       font-lock-constant-face)
-      ;; ---------------------------
-      (,(concat "\\<$" "\\w+" "\\>")
-       (0
-        font-lock-variable-name-face
-        nil
-        t))
-
-      (,(concat "\\<"
-                (regexp-opt '("->" ":"))
-                "\\>")
-       (0
-        font-lock-type-face
-        nil
-        t))
-      ;; type syntax
-      ;; (,(concat
-      ;;           "("
-      ;;           "\\(->.+\\)"
-      ;;           ")")
-      ;;  (1
-      ;;   font-lock-type-face
-      ;;   nil
-      ;;   t))
-      )))
+    (let* (;; Regex patterns to match any keyword starting with '@' or '&'
+           (at-constants "@\\w+")
+           (amp-constants "&\\w+"))
+      `(;; Apply constant face to @ prefixed words
+        (,at-constants . font-lock-constant-face)
+        ;; Apply constant face to & prefixed words
+        (,amp-constants . font-lock-constant-face)
+        ;; in
+        ;; (= (foo) (bar))
+        ;; fontify = ?
+        ;; fontify foo ?
+        ;;
+        ;; -----------------------------
+        ;; - type declarations
+        ;; - type syntax
+        ;; -----------------------------
+        (,(concat
+           "\\<"
+           (regexp-opt '("&self") t)
+           "\\>")
+         0
+         font-lock-type-face)
+        ;; special forms
+        (
+         ,(regexp-opt metta-grounded-symbols 'words)
+         1
+         font-lock-builtin-face)
+        (,(concat "\\<" "\!" "\\>")
+         0
+         font-lock-keyword-face)
+        (,(concat
+           "\\<"
+           (regexp-opt metta-operators t)
+           "\\>")
+         1
+         'metta-operators-face)
+        (,(concat
+           "("
+           (regexp-opt
+            metta-operators-other
+            t)
+           "\\>")
+         1
+         font-lock-keyword-face)
+        (,(regexp-opt
+           metta-constants
+           'words)
+         0
+         font-lock-constant-face)
+        ;; ---------------------------
+        (,(concat "\\<$" "\\w+" "\\>")
+         (0
+          font-lock-variable-name-face
+          nil
+          t))
+        (,(concat
+           "\\<"
+           (regexp-opt '("->" ":"))
+           "\\>")
+         (0 font-lock-type-face nil t))
+        ;; type syntax
+        ;; (,(concat
+        ;;           "("
+        ;;           "\\(->.+\\)"
+        ;;           ")")
+        ;;  (1
+        ;;   font-lock-type-face
+        ;;   nil
+        ;;   t))
+        ))))
 
 
 (defun metta-font-lock-setup ()
@@ -426,11 +325,12 @@
       (lambda (_)
         (append
          metta-grounded-symbols
-         '("&self"
+         metta-constants
+         metta
+         '(
+           ;; honary
            "Nil"
            "nil"
-           "True"
-           "False"
            "%Undefined%"
            ;; ------------------
            ;; python
@@ -442,13 +342,12 @@
          metta-operators
          metta-operators-other))))))
 
-(define-derived-mode metta-mode scheme-mode "MeTTa"
+(define-derived-mode metta-mode prog-mode "MeTTa"
   (metta-font-lock-setup)
   (add-hook 'completion-at-point-functions
             #'metta-mode-completion-at-point
             nil
             t))
-
 
 ;;;###autoload
 (progn
@@ -456,4 +355,156 @@
    'auto-mode-alist
    '("\\.metta\\'" . metta-mode)))
 
+
+
+;; -------------------
+;; metta-repl
+;; ----------------
+
+
+;; 
+;; how to start a metta-repl
+;; This currently needs to be customized by the user. !
+
+
+
+(defun metta-start-metta-repl ()
+  (let ((default-directory "/home/benj/repos/hyperon-experimental/"))
+    (start-process
+     "MeTTA REPL"
+     (get-buffer-create
+      "*metta-repl*")
+     "cargo"
+     "run"
+     "--bin"
+     "metta-repl")))
+
+(defvar-local metta--request nil)
+
+(defun metta-run-inferior-metta ()
+  ;; todo:
+  ;; - make it a repl buffer so you can also type
+  ;; - run with some start script
+  ;; - implement req->response on metta side
+  ;; - make it buffer for large outputs
+  ;; - be inspried by clojure nrepl
+  (interactive)
+  (let ((p (metta-start-metta-repl)))
+    (set-process-filter
+     p
+     #'metta-connetion-process-filter)
+    (display-buffer
+     (process-buffer p))))
+
+(defun metta-connetion-process-filter (proc string)
+  (with-current-buffer
+      (process-buffer proc)
+    (insert string)
+    (when-let ((k (plist-get metta--request :k)))
+      ;; kludge: filter the result list of something
+      ;; this way I differentiate between printing and returning
+      ;; results
+      ;;
+      ;; TODO: 1. request response concept
+      ;;
+      (let ((string (s-trim string)))
+        (when
+            (or
+             (s-matches? "^\\[.+?\\]$" string)
+             (equal ">" string)
+             (equal "[]" string))
+          (funcall k string)
+          (setf metta--request '()))))))
+
+(defun metta-eval (connection string continuation)
+  (let* ((orig-buffer (current-buffer))
+         (request-id (concat
+                      "metta-r-"
+                      (current-time)))
+         (kont (lambda (output)
+                 (with-current-buffer
+                     orig-buffer
+                   (funcall continuation output)))))
+    (with-current-buffer
+        connection
+      (process-send-string
+       (get-buffer-process connection)
+       string)
+      (process-send-string
+       (get-buffer-process connection)
+       "\n")
+      ;; - the request id could come from the metta side
+      ;; - alternative: we evaluate a form roughly like: (request-id . (form))
+      (setq-local
+       metta--request
+       `(:input ,string
+                :id ,request-id
+                :k ,kont)))))
+
+(defun metta-current-connection ()
+  ;; 
+  ;; TODO: support multiple
+  ;; - not merely project wide, as a  lesson from cider
+  (get-buffer "*metta-repl*"))
+
+(defun metta-eval-string (s)
+  (let ((output)
+        (connection (get-buffer "*metta-repl*"))
+        (timout (run-at-time
+                 1
+                 nil
+                 (lambda ()
+                   (setq output "timeout")))))
+    (unless connection
+      (user-error
+       "No inferior metta."))
+    (metta-eval
+     connection
+     s
+     (lambda (s) (setq output s)))
+    (while (null output)
+      (accept-process-output
+       (get-buffer-process connection)
+       0.1))
+    (setq myoutput output)
+    (if (equal output ">")
+        ":>"
+      output)))
+
+;; ----------------------
+;; set up lispy
+;; ----------------------
+(when
+    (require 'lispy nil t)
+  ;; 
+  (add-to-list
+   'lispy-parens-preceding-syntax-alist
+   '(metta-mode . ("[`'~@]+"
+                   "#"
+                   "#\\?@?"
+                   "\\!"
+                   "\\!\\s-+?"
+                   "\\$")))
+  ;; ------------------------------------------
+  (add-to-list 'lispy-eval-alist '((metta-mode) lispy metta-eval-string)))
+
+(defun metta-last-sexp ()
+  ;; (thing-at-point 'sexp)
+  ;; ?? 
+  ;; dependency on lispy
+  ;; maybe dependency on lispy is ok? 
+  (lispy--string-dwim))
+
+(defun metta-eval-last-sexp ()
+  (interactive)
+  (metta-eval
+   (metta-current-connection)
+   (metta-last-sexp)
+   (lambda (s)
+     (message "%s" s))))
+
+
 (provide 'metta-mode)
+
+
+

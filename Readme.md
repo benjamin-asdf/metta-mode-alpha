@@ -51,6 +51,8 @@ example:
 - TODO: completion with inferior metta?
 - TODO: fontification for function symbols, type symbols etc.?
 
+- TODO: merge stuff from https://github.com/trueagi-io/metta-wam/blob/master/libraries/lsp_server_metta/lsp-metta.el
+
 
 # Acknowledgments
 
